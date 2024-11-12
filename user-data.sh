@@ -9,9 +9,9 @@ yum install -y ansible
 mkdir -p /etc/ansible/playbooks
 
 # Descargar playbook desde GitHub (raw)
-curl -L https://raw.githubusercontent.com/usuario/repositorio/rama/playbook.yml -o /etc/ansible/playbooks/playbook.yml
+curl -L https://raw.githubusercontent.com/koebner/macroPayExam/refs/heads/master/provision.yml -o /etc/ansible/playbooks/playbook.yml
 # O alternativamente usando wget:
-# wget -O /etc/ansible/playbooks/playbook.yml https://raw.githubusercontent.com/usuario/repositorio/rama/playbook.yml
+# wget -O /etc/ansible/playbooks/playbook.yml https://raw.githubusercontent.com/koebner/macroPayExam/refs/heads/master/provision.yml
 
 # Ejecutar playbook
 cd /etc/ansible/playbooks
