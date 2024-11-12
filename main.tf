@@ -125,3 +125,4 @@ resource "aws_security_group" "macroPay_lb" {
 
   vpc_id = module.vpc.vpc_id
 }
+

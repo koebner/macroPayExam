@@ -1,0 +1,36 @@
+# provision.yml
+---
+- name: Configurar servidor web
+  hosts: all
+  become: yes
+  tasks:
+    - name: Actualizar cache de paquetes
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Instalar dependencias básicas
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - curl
+        - vim
+        - git
+
+    - name: Instalar Nginx
+      apt:
+        name: nginx
+        state: latest
+
+    - name: Asegurar que Nginx esté iniciado
+      service:
+        name: nginx
+        state: started
+        enabled: yes
+
+    - name: Configurar firewall
+      ufw:
+        rule: allow
+        port: "80"
+        proto: tcp
