@@ -20,16 +20,22 @@ module "vpc" {
   cidr = "10.0.0.0/16"
 
   azs                  = data.aws_availability_zones.available.names
-  public_subnets       = ["10.0.4.0/24", "10.0.5.0/24", "10.0.6.0/24"]
+  public_subnets       = ["10.0.4.0/24","10.0.5.0/24"]
+  private_subnets = [ "10.0.14.0/24","10.0.15.0/24" ]
   enable_dns_hostnames = true
   enable_dns_support   = true
 }
 
-
+# resource "aws_key_pair" "ssh_key" {
+#   key_name   = "mcPayKey"
+#   public_key = file("mcPayKey.pub") # Asegúrate de tener tu clave pública aquí
+# }
 
 resource "aws_launch_configuration" "terraform_macroPay" {
   name_prefix     = "macroPay-terraform-aws-asg-"
   image_id        = "ami-0984f4b9e98be44bf"
+  # key_name = aws_key_pair.ssh_key.key_name
+  key_name = "macroPayKey"
   instance_type   = "t2.micro"
   user_data       = file("user-data.sh")
   security_groups = [aws_security_group.macroPay_instance.id]
@@ -55,6 +61,22 @@ resource "aws_autoscaling_group" "macroPay" {
     propagate_at_launch = true
   }
 }
+resource "aws_autoscaling_policy" "scale_up" {
+  name                   = "scale_up"
+  scaling_adjustment     = 1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.macroPay.name
+}
+
+resource "aws_autoscaling_policy" "scale_down" {
+  name                   = "scale_down"
+  scaling_adjustment     = -1
+  adjustment_type        = "ChangeInCapacity"
+  cooldown               = 300
+  autoscaling_group_name = aws_autoscaling_group.macroPay.name
+}
+
 
 resource "aws_lb" "macroPay" {
   name               = "macroPay-asg-lb"
@@ -95,6 +117,13 @@ resource "aws_security_group" "macroPay_instance" {
     to_port         = 80
     protocol        = "tcp"
     security_groups = [aws_security_group.macroPay_lb.id]
+
+  }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
